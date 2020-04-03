@@ -3,6 +3,10 @@
 
 Python program to query .fasta files against different databases of www.boldsystems.org
 
+## Introduction
+
+## Installation
+
 ## Login to your account
 
 ## Use the BOLD identification engine for COI, ITS and rbcL & matK
