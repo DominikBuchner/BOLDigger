@@ -4,7 +4,7 @@
 Python program to query .fasta files against different databases of www.boldsystems.org
 
 ## Introduction
-DNA-Metabarcoding often produces large numbers of OTUs which need to be queried against databases to identify the sequence. BOLD Systems offers such a database and is therefore used by many biologists. Unfortunately you can only identify a batch of 100 sequences in one run. Using the API does not solve the problem completly since it does not give access to the private and early release data. BOLDigger aims to help with this problem. As a pure python program with a user-friendly GUI it not only gives automated access to the identification engine but can also be used to download additional data for each sequence as well as helping you chose the top hit from the returned results. 
+DNA-Metabarcoding often produces large numbers of OTUs which need to be queried against databases to identify the sequence. BOLD Systems offers such a database and is therefore used by many biologists. Unfortunately only a batch of 100 sequences can be identified in one run. Using the API does not solve the problem completly since it does not give access to the private and early release data. BOLDigger aims to solve this problem. As a pure python program with a user-friendly GUI it not only gives automated access to the identification engine but can also be used to download additional data for each sequence as well as helping to chose the top hit from the returned results. 
 
 ## Installation
 
