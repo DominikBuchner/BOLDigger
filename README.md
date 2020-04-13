@@ -35,7 +35,7 @@ There are three options available to determine the best fitting hit:
 
 ### First hit
 
-This options uses the first hit and can be used for all markers. 
+This options uses the first hit and can be used for all markers supported by BOLDigger. 
 
 ### JAMP Pipeline
 
