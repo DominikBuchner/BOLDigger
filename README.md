@@ -45,4 +45,13 @@ After determining the threshold for all hits the most common hit above the thres
 ## BOLDigger - requires additional data
 
 This option is similar to the JAMP option but flags suspicious hits. **Make sure you downloaded the additional data.**
+There are 4 flags at the moment which will be updated if needed:
+
+1. Reverse BIN taxonomy has been used for any of the top 20 hits representing the selected match.
+2. There are more than one taxonomic levels above the selected threshold (e.g. two species above 98%).
+3. All of the top 20 hits representing the top hit are private or early-release hits.
+4. The top hit represents only one hit of the top 20 hits.
+
+A closer look at all flagged hits is advised since they represent a certain degree of uncertainty for the selected hit.
+
 
