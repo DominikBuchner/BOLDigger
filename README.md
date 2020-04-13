@@ -42,7 +42,7 @@ This options uses the first hit and can be used for all markers supported by BOL
 This optios reproduces the output from the [JAMP Pipeline](https://github.com/VascoElbrecht/JAMP) would give. therefore different thresholds (98%: species level, 95%: genus level, 90%: family level, 85%: order level, <85%: class level) for the taxonomic levels are used to find the best fitting hit.  
 After determining the threshold for all hits the most common hit above the threshold will be selected. Note that for all hits below the threshold the taxonomic resolution will be adjusted accordingly (e.g. for a 96% hit the species level information will be dropped).
 
-## BOLDigger
+## BOLDigger - requires additional data
 
-This option is similar to the JAMP option but flags suspicious hits. 
+This option is similar to the JAMP option but flags suspicious hits. **Make sure you downloaded the additional data.**
 
