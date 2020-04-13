@@ -10,6 +10,9 @@ DNA-Metabarcoding often produces large numbers of OTUs which need to be queried 
 
 ## Login to your account
 
+The identification engine requires an account at www.boldsystems.org. A login is required to query more than one sequence with the identification engine. Userdata can be saved by ticking "Remember me". **Note that your password will be saved unencrypted . Don't use this option if this is not okay.**  
+After the login is performed it can be used for the whole session.
+
 ## Use the BOLD identification engine for COI, ITS and rbcL & matK
 
 Once logged into the account the identification engine of BOLD can be used. An output folder needs to be selected where the results will be saved, as well as an input file in the .fasta format. Three different databases can be selected: **COI, ITS or rbcL & matK** as well as a **batch size**. This handles how many sequences will be identified in one request. 100 is the maximum value as well as the default for COI. Batch size depends on variuos parameters like your internet connection, availability of the BOLD database as well as  length of the requested sequences and needs to be adjusted when a lot of ConnectionErrors occour. A batch size of **100 is recommended for COI**, **10 for ITS**, and **< 5 for rbcL & matK.**  
@@ -36,4 +39,9 @@ This options uses the first hit and can be used for all markers.
 
 ### JAMP Pipeline
 
+This optios reproduces the output from the [JAMP Pipeline](https://github.com/VascoElbrecht/JAMP) would give. therefore different thresholds (98%: species level, 95%: genus level, 90%: family level, 85%: order level, <85%: class level) for the taxonomic levels are used to find the best fitting hit.  
+After determining the threshold for all hits the most common hit above the threshold will be selected. Note that for all hits below the threshold the taxonomic resolution will be adjusted accordingly (e.g. for a 96% hit the species level information will be dropped).
 
+## BOLDigger
+
+This option is similar to the JAMP option but flags suspicious hits. 
