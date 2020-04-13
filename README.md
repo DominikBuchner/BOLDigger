@@ -44,7 +44,7 @@ After determining the threshold for all hits the most common hit above the thres
 
 ## BOLDigger - requires additional data
 
-This option is similar to the JAMP option but flags suspicious hits. **Make sure you downloaded the additional data.**
+This option is similar to the JAMP option but flags suspicious hits. **Make sure additional data was downloaded.**
 There are 4 flags at the moment which will be updated if needed:
 
 1. Reverse BIN taxonomy has been used for any of the top 20 hits representing the selected match.
