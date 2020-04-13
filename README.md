@@ -45,3 +45,5 @@ After determining the threshold for all hits the most common hit above the thres
 ## BOLDigger
 
 This option is similar to the JAMP option but flags suspicious hits. 
+
+<a href="https://github.com/VascoElbrecht/JAMP" target="_blank">JAMP</a>
