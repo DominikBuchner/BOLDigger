@@ -20,4 +20,20 @@ Test input files can be found [here](https://github.com/DominikBuchner/BOLDigger
 
 ## Download additional data from BOLD
 
+The standard output of the identification engine returns information about the taxonomy (Phylum, Class, Order, Family, Genus, Species and Subspecies) as well as a similarity score for each hit in the database, if the data is public, private or early-access as well as the BOLD Process ID.  
+Additional data can be downloaded via the BOLD API by providing the output from the identification the identification engine. Additional data is: BOLD Record ID, BOLD BIN, Sex, Life stage, Country, Identifier, Identification method, the institution storing the sample and a link to the specimen page. Note that in order to open the specimen page a login to boldsystems.org is required.
+
 ## Find the best fitting hit from the top 20 (COI) and top 99 (ITS / rbcL & matK)
+
+There are three options available to determine the best fitting hit:  
+* First hit
+* JAMP Pipeline
+* BOLDigger
+
+### First hit
+
+This options uses the first hit and can be used for all markers. 
+
+### JAMP Pipeline
+
+
