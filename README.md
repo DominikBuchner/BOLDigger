@@ -10,7 +10,7 @@ DNA-Metabarcoding often produces large numbers of OTUs which need to be queried 
 
 ## Login to your account
 
-The identification engine requires an account at www.boldsystems.org. A login is required to query more than one sequence with the identification engine. Userdata can be saved by ticking "Remember me". **Note that your password will be saved unencrypted . Don't use this option if this is not okay.**  
+The identification engine requires an account at www.boldsystems.org. A login is required to query more than one sequence with the identification engine. Userdata can be saved by ticking "Remember me". **Note that your password will be saved unencrypted. Don't use this option if this is not okay.**  
 After the login is performed it can be used for the whole session.
 
 ## Use the BOLD identification engine for COI, ITS and rbcL & matK
