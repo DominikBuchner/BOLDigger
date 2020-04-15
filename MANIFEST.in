@@ -1,0 +1,6 @@
+include boldigger/data/logo.png
+include boldigger/data/github.png
+include boldigger/data/userdata
+include boldigger/tests/COI.fasta
+include boldigger/tests/ITS.fasta
+include boldigger/test/rbcl.fasta
