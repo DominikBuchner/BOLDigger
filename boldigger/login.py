@@ -3,9 +3,9 @@ import PySimpleGUI as sg
 from bs4 import BeautifulSoup as BSoup
 
 ## function to login to bold
-def login(username, password, remember = False):
+def login(username, password, certificate, remember = False):
     ## start a new html session
-    session = requests_html.HTMLSession()
+    session = requests_html.HTMLSession(verify = certificate)
 
     ## data to push into the post request
     data = {
@@ -16,10 +16,10 @@ def login(username, password, remember = False):
     }
 
     ## send a post request to log into boldsystems.org
-    session.post('http://boldsystems.org/index.php/Login', data = data)
+    session.post('https://boldsystems.org/index.php/Login', data = data)
 
     ## test if the login was successfull
-    url = session.get('http://boldsystems.org/')
+    url = session.get('https://boldsystems.org/')
     soup = BSoup(url.text, 'html.parser')
     content = soup.find(class_ = 'site-navigation nav navbar-nav')
     tags = content.find_all('a')

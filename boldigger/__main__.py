@@ -1,5 +1,5 @@
 import PySimpleGUI as sg
-import pkgutil, json, ast, webbrowser
+import pkgutil, json, ast, webbrowser, pkg_resources
 from boldigger import login, boldblast_coi, boldblast_its, boldblast_rbcl, additional_data
 from boldigger import first_hit, jamp_hit, digger_sort
 
@@ -7,6 +7,7 @@ from boldigger import first_hit, jamp_hit, digger_sort
 logo = pkgutil.get_data(__name__, 'data/logo.png')
 github = pkgutil.get_data(__name__, 'data/github.png')
 userdata = ast.literal_eval(pkgutil.get_data(__name__, 'data/userdata').decode())
+certs = pkg_resources.resource_filename(__name__, 'data/certs.pem')
 
 ## main function to handle the flow of boldigger
 def main():
@@ -48,7 +49,7 @@ def main():
         if event == None or event == 'Exit':
             break
         if event == 'login_check':
-            session = login.login(values['username'], values['password'], values['rem_pw'])
+            session = login.login(values['username'], values['password'], certs, values['rem_pw'])
 
         ## search engine for coi
         if event == 'id_eng' and values['coi']:
