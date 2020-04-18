@@ -4,7 +4,7 @@
 Python program to query .fasta files against the different databases of www.boldsystems.org
 
 ## Introduction
-DNA metabarcoding data sets often consist of hundreds of Operational Taxonomic Units (OTUs), which need to be queried against databases to assign taxonomy. Barcode of Life Data system (BOLD) offers such a database that is used by many biologists. Unfortunately, only batches of 100 sequences can be identified once. Using BOLD's API does not solve the problem completely since it does not grant access to private and early release data. BOLDigger aims to solve this problem. As a pure python program with a user-friendly GUI, it not only gives automated access to the identification engine but can also be used to download additional metadata for each sequence as well as helping to choose the top hit from the returned results. 
+DNA metabarcoding data sets often consist of hundreds of Operational Taxonomic Units (OTUs), which need to be queried against databases to assign taxonomy. Barcode of Life Data system (BOLD) offers such a database that is used by many biologists. Unfortunately, only batches of 100 sequences can be identified once. Using BOLD's API does not solve the problem completely since it does not grant access to private and early release data. BOLDigger aims to solve this problem. As a pure python program with a user-friendly GUI, it not only gives automated access to the identification engine but can also be used to download additional metadata for each sequence as well as helping to choose the top hit from the returned results.
 
 ## Installation
 
@@ -16,6 +16,10 @@ will install BOLDigger as well as all needed dependencies.
 BOLDigger can be started by typing:  
 
 `boldigger` or `python -m boldigger`
+
+When a new version is released you can update by typing:
+
+`pip install --upgrade boldigger`
 
 ## Login to your account
 
@@ -46,7 +50,7 @@ There are three options available to determine the best fitting hit:
 
 ### First hit
 
-This options uses the first hit and can be used for all markers supported by BOLDigger. 
+This options uses the first hit and can be used for all markers supported by BOLDigger.
 
 ### JAMP Pipeline
 
@@ -71,5 +75,3 @@ A closer look at all flagged hits is advised since they represent a certain degr
 ## Still to do
 
 * Implement the identification engine API for quick analyses
-
-
