@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="boldigger",
-    version="1.1.0",
+    version="1.1.1",
     author="Dominik Buchner",
     author_email="dominik.buchner524@googlemail.com",
     description="A python package to query different databases of boldsystems.org",
@@ -15,7 +15,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     license = 'MIT',
     install_requires = ['PySimpleGUI', 'requests-html', 'beautifulsoup4', 'openpyxl',
-                        'numpy', 'pandas', 'requests', 'more-itertools'],
+                        'numpy', 'pandas', 'requests', 'more-itertools', 'lxml', 'html5lib'],
     include_package_data = True,
     classifiers=[
         "Programming Language :: Python :: 3",
