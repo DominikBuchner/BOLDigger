@@ -15,7 +15,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     license = 'MIT',
     install_requires = ['PySimpleGUI', 'requests-html', 'beautifulsoup4', 'openpyxl',
-                        'numpy', 'pandas', 'requests', 'more-itertools', 'lxml', 'html5lib'],
+                        'numpy', 'pandas', 'requests', 'more-itertools', 'lxml', 'html5lib', 'xlrd'],
     include_package_data = True,
     classifiers=[
         "Programming Language :: Python :: 3",
