@@ -32,8 +32,8 @@ Once logged into the account, the identification engine of BOLD can be used. An 
 The results will be written to the output folder and will always be named "BOLDResults_fastaname.xlsx". In case a workbook with that name already exists in the output folder the results will be appended to this file.   
 After every batch, the requested sequences will be removed from the input file and written to a new file named "fastaname_done.fasta" in the same folder as the input file. This is to prevent running input files twice: If BOLDigger crashes it can just be restarted with the same output folder and input file and will continue  where the crash occurred.
 
-**The BOLD server will take some time to respond to the request. The output window will freeze during this time and updated once a response is sent.**
-**Please make sure there are not additional empty lines or invalid sequences (containing letters that don't code for bases) are in your .fasta file.**
+**The BOLD server will take some time to respond to the request. The output window will freeze during this time and updated once a response is sent.**  
+**Please make sure there are no additional empty lines or invalid sequences (containing letters that don't code for bases) are in your .fasta file.**
 
 Test input files can be found [here](https://github.com/DominikBuchner/BOLDigger/tree/master/tests)
 
