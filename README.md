@@ -76,3 +76,4 @@ A closer look at all flagged hits is advised since they represent a certain degr
 ## Still to do
 
 * Implement the identification engine API for quick analyses
+* Add documentation for command line usage
