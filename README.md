@@ -21,6 +21,10 @@ When a new version is released you can update by typing:
 
 `pip install --upgrade boldigger`
 
+## How to cite
+
+Buchner D, Leese F (2020) BOLDigger – a Python package to identify and organise sequences with the Barcode of Life Data systems. Metabarcoding and Metagenomics 4: e53535. https://doi.org/10.3897/mbmg.4.53535
+
 ## Login to your account
 
 The identification engine requires an account at www.boldsystems.org. A login is required to query more than one sequence with the identification engine. User data can be saved by ticking "Remember me". **Note that your password will be saved unencrypted. Don't use this option if this is not okay.**  
