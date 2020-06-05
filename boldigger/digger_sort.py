@@ -14,7 +14,7 @@ def get_full_data(path):
         ## check file format, check if metadata was added
         if list(full_data.columns.values)[1] != 'Phylum':
             return 'Wrong file'
-        if list(full_data.columns.values)[10] != 'Record ID':
+        if len(full_data.columns.values) != 19:
             return 'No metadata'
         ## slice the dataframe in one df for each otu and reset the indexes on resultig dfs
         ## rename id after first value in the ID column e.g. > OTUXX
@@ -129,7 +129,7 @@ def main(xlsx_path):
                 window.Refresh()
                 full_data = get_full_data(xlsx_path)
 
-                if full_data != 'No metadata':
+                if get_full_data(xlsx_path) != 'No metadata':
                     ## flag every hit
                     window['out'].print('%s: Flagging the hits.' % datetime.datetime.now().strftime("%H:%M:%S"))
                     window.Refresh()
