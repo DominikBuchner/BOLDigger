@@ -95,7 +95,7 @@ def save_as_df(html_list, sequence_names):
     for index in range(len(dataframes)):
         if process_id_lists[index]:
             statuslist = list(np.where(dataframes[index]['Status'] == 'Published', True, False))
-            statuslist = [process_id_lists[index].pop() if status else '' for status in statuslist]
+            statuslist = [process_id_lists[index].pop(0) if status else '' for status in statuslist]
             dataframes[index]['Process ID'] = statuslist
         else:
             dataframes[index]['Process ID'] = ''
