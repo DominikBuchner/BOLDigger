@@ -1,13 +1,33 @@
 import PySimpleGUI as sg
-import pkgutil, json, ast, webbrowser, pkg_resources
+import pkgutil, json, ast, webbrowser, pkg_resources, os, sys
 from boldigger import login, boldblast_coi, boldblast_its, boldblast_rbcl, additional_data
 from boldigger import first_hit, jamp_hit, digger_sort
+from contextlib import contextmanager
+from johnnydep.lib import JohnnyDist
+
+## function to supress standard out for Johnnydep
+@contextmanager
+def suppress_stdout():
+    with open(os.devnull, "w") as devnull:
+        old_stdout = sys.stdout
+        sys.stdout = devnull
+        try:
+            yield
+        finally:
+            sys.stdout = old_stdout
+
+## get most recent version with Johnnydep
+with suppress_stdout():
+    dist = JohnnyDist('boldigger')
 
 ## get image data for the GUI
 logo = pkgutil.get_data(__name__, 'data/logo.png')
 github = pkgutil.get_data(__name__, 'data/github.png')
 userdata = ast.literal_eval(pkgutil.get_data(__name__, 'data/userdata').decode())
 certs = pkg_resources.resource_filename(__name__, 'data/certs.pem')
+version = pkg_resources.get_distribution('boldigger').version
+with suppress_stdout():
+    most_recent_version = dist.version_latest
 
 ## main function to handle the flow of boldigger
 def main():
@@ -37,14 +57,21 @@ def main():
               [sg.Text('Select a method to determine the top hit (BOLDigger method requires additional data)')],
               [sg.Radio('Use first hit', 'sort_method', key = 'firsthit', default = True), sg.Radio('JAMP Pipeline', 'sort_method', key = 'jamp'), sg.Radio('BOLDigger', 'sort_method', key = 'digger'), sg.Button('Run', key = 'tophit', button_color = ('white', 'red'))]],
               title = 'Add a list of top hits')],
-              [sg.Button('Exit'), sg.Button(image_data = github, key = 'github', pad = ((640, 0), 0))]
+              [sg.Button('Exit'), sg.Text('version: {}'.format(version)), sg.Button(image_data = github, key = 'github', pad = ((640, 0), 0))] #
               ]
 
     window = sg.Window('BOLDigger', layout)
+    ## check for update once on startup
+    update_check = True
 
     ## main loop
     while True:
         event, values = window.read(timeout = 100)
+
+        ## check version on startup
+        if version != most_recent_version and update_check:
+            update_check = False
+            sg.popup('A new version of BOLDigger is available.\nPlease close the application and update.', title = 'Update')
 
         if event == None or event == 'Exit':
             break

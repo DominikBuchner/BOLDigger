@@ -81,4 +81,3 @@ A closer look at all flagged hits is advised since they represent a certain degr
 
 * Implement the identification engine API for quick analyses
 * Add documentation for command line usage
-* Make version number visible in the GUI
