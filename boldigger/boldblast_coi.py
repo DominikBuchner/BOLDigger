@@ -2,6 +2,7 @@ import requests_html, openpyxl, ntpath, os, datetime
 import PySimpleGUI as sg
 import numpy as np
 import pandas as pd
+from pathlib import Path
 from bs4 import BeautifulSoup as BSoup
 from requests.exceptions import ConnectionError
 from requests.exceptions import ReadTimeout
@@ -157,9 +158,9 @@ def fasta_rewrite(fasta_path, query_size):
         data = input.read().splitlines(True)
 
     ## create out put name
-    name, ext = ntpath.basename(fasta_path).rsplit('.', 1)
-    output_name = name + '_done.' + ext
-    output_path = ntpath.join(ntpath.dirname(fasta_path), output_name)
+    name, ext = Path(fasta_path).stem, Path(fasta_path).suffix
+    output_name = '{}_done{}'.format(name, ext)
+    output_path = Path(fasta_path).parents[0].joinpath(output_name)
 
     ## write output
     with open(output_path, 'a') as output:

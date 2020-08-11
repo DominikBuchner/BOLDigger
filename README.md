@@ -82,4 +82,3 @@ A closer look at all flagged hits is advised since they represent a certain degr
 * Implement the identification engine API for quick analyses
 * Add documentation for command line usage
 * Add a failsafe for long sequence names which crash the identification engine
-* fix a bug where the fasta file is moved during identification. Cause by different ways to create file paths.
