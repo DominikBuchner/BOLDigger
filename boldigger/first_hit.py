@@ -30,7 +30,7 @@ def first_hit(xlsx_path):
         ## remove nomatch duplices, drop the first non duplicate Nomatch
         data = data[data['Rank'].isin(first_hits)]
         data = data.drop_duplicates()
-        data = data.dropna(subset=['You searched for'])
+        data = data.dropna(subset=['ID'])
 
     ## close and save the writer
     data.to_excel(writer, sheet_name = 'First hit', index = False)
