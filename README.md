@@ -1,6 +1,8 @@
 # BOLDigger
 ![](boldigger/data/logo.png)
 
+[![Downloads](https://pepy.tech/badge/boldigger)](https://pepy.tech/project/boldigger)
+
 Python program to query .fasta files against the different databases of www.boldsystems.org
 
 ## Introduction
