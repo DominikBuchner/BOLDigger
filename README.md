@@ -8,6 +8,8 @@ Python program to query .fasta files against the different databases of www.bold
 ## Introduction
 DNA metabarcoding data sets often consist of hundreds of Operational Taxonomic Units (OTUs), which need to be queried against databases to assign taxonomy. Barcode of Life Data system (BOLD) offers such a database that is used by many biologists. Unfortunately, only batches of 100 sequences can be identified once. Using BOLD's API does not solve the problem completely since it does not grant access to private and early release data. BOLDigger aims to solve this problem. As a pure python program with a user-friendly GUI, it not only gives automated access to the identification engine but can also be used to download additional metadata for each sequence as well as helping to choose the top hit from the returned results.
 
+For the command-line version please visit https://github.com/DominikBuchner/BOLDigger-commandline
+
 ## Installation
 
 BOLDigger requires Python version 3.6 or higher and can be easily installed by using pip in any command line:  
