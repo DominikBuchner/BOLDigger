@@ -1,24 +1,8 @@
 import PySimpleGUI as sg
-import pkgutil, json, ast, webbrowser, pkg_resources, os, sys
+import pkgutil, json, ast, webbrowser, pkg_resources, os, sys, luddite
 from boldigger import login, boldblast_coi, boldblast_its, boldblast_rbcl, additional_data
 from boldigger import first_hit, jamp_hit, digger_sort
 from contextlib import contextmanager
-from johnnydep.lib import JohnnyDist
-
-## function to supress standard out for Johnnydep
-@contextmanager
-def suppress_stdout():
-    with open(os.devnull, "w") as devnull:
-        old_stdout = sys.stdout
-        sys.stdout = devnull
-        try:
-            yield
-        finally:
-            sys.stdout = old_stdout
-
-## get most recent version with Johnnydep
-with suppress_stdout():
-    dist = JohnnyDist('boldigger')
 
 ## get image data for the GUI
 logo = pkgutil.get_data(__name__, 'data/logo.png')
@@ -26,8 +10,7 @@ github = pkgutil.get_data(__name__, 'data/github.png')
 userdata = ast.literal_eval(pkgutil.get_data(__name__, 'data/userdata').decode())
 certs = pkg_resources.resource_filename(__name__, 'data/certs.pem')
 version = pkg_resources.get_distribution('boldigger').version
-with suppress_stdout():
-    most_recent_version = dist.version_latest
+most_recent_version = luddite.get_version_pypi('boldigger')
 
 ## main function to handle the flow of boldigger
 def main():
