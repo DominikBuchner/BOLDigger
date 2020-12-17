@@ -11,7 +11,7 @@ def first_hit(xlsx_path):
     writer.book = wb
 
     ## load data into a dataframe
-    data = pd.read_excel(xlsx_path, header = 0)
+    data = pd.read_excel(xlsx_path, header = 0, engine = 'openpyxl')
     data = data.rename(columns = {'You searched for': 'ID'})
 
     ## check if coi or its / rbcl

@@ -24,7 +24,7 @@ def get_threshold(df):
 def get_data(xlsx_path):
     ## open excel file
     ## skip subspecies and process ID, rename 'You searched for to ID'
-    data = pd.read_excel(xlsx_path, usecols = 'A:G,I:J')
+    data = pd.read_excel(xlsx_path, usecols = 'A:G,I:J', engine = 'openpyxl')
     data = data.rename(index = str, columns={'You searched for': 'ID'})
 
     ## check file format

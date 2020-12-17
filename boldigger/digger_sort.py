@@ -8,7 +8,7 @@ from boldigger.jamp_hit import get_data, jamp_hit, get_threshold
 def get_full_data(path):
         ## open excel file
         ## skip subspecies and process ID, rename 'You searched for to ID'
-        full_data = pd.read_excel(path, usecols = 'A:G,I:T')
+        full_data = pd.read_excel(path, usecols = 'A:G,I:T', engine = 'openpyxl')
         full_data = full_data.rename(index = str, columns={'You searched for': 'ID'})
 
         ## check file format, check if metadata was added
