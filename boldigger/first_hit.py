@@ -4,15 +4,15 @@ import PySimpleGUI as sg
 
 def first_hit(xlsx_path):
 
+    ## load data into a dataframe
+    data = pd.read_excel(xlsx_path, header = 0, engine = 'openpyxl')
+    data = data.rename(columns = {'You searched for': 'ID'})
+
     ## open workbook for checking the type and create writer to save data later
     wb = openpyxl.load_workbook(xlsx_path)
     ws = wb.active
     writer = pd.ExcelWriter(xlsx_path, engine = 'openpyxl')
     writer.book = wb
-
-    ## load data into a dataframe
-    data = pd.read_excel(xlsx_path, header = 0, engine = 'openpyxl')
-    data = data.rename(columns = {'You searched for': 'ID'})
 
     ## check if coi or its / rbcl
     type = 'coi' if ws.cell(row = 1, column = 11).value == 'Process ID' else 'its_rbcl'
