@@ -85,4 +85,3 @@ A closer look at all flagged hits is advised since they represent a certain degr
 ## Still to do
 
 * Implement the identification engine API for quick analyses
-* Add a failsafe for malformed fasta files (header names too long, sequences to short, bad characters in the sequences)
