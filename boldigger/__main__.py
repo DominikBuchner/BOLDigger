@@ -2,6 +2,7 @@ import PySimpleGUI as sg
 import pkgutil, json, ast, webbrowser, pkg_resources, os, sys, luddite
 from boldigger import login, boldblast_coi, boldblast_its, boldblast_rbcl, additional_data
 from boldigger import first_hit, jamp_hit, digger_sort
+from boldigger import check_fasta
 from contextlib import contextmanager
 
 ## get image data for the GUI
@@ -31,7 +32,7 @@ def main():
               [sg.Text('Select a database'), sg.Radio('COI', 'database', key = 'coi', default = True),
               sg.Radio('ITS', 'database', key = 'its'), sg.Radio('rbcL & matK', 'database', key = 'rbcl'),
               sg.Spin([i for i in range(1, 101)], initial_value = 100, size = (3, 1), key = 'batch_size'), sg.Text('Batch size')],
-              [sg.Text('Select a fasta file'), sg.InputText(size = (40, 1), do_not_clear = True, key = 'fasta_path'), sg.FileBrowse(), sg.Button('Run', key = 'id_eng', button_color = ('white', 'red'))]],
+              [sg.Text('Select a fasta file'), sg.InputText(size = (40, 1), do_not_clear = True, key = 'fasta_path'), sg.FileBrowse(), sg.Button('Check fasta', key = 'fasta_check'), sg.Button('Run', key = 'id_eng', button_color = ('white', 'red'))]],
               title = 'BOLD identification engine')],
               [sg.Frame(layout = [
               [sg.Text('Select a BOLDResults file'), sg.InputText(size = (40, 1), do_not_clear = True, key = 'resultpath'), sg.FileBrowse(), sg.Button('Run', key = 'add_data', button_color = ('white', 'red'))]],
@@ -60,6 +61,17 @@ def main():
             break
         if event == 'login_check':
             session = login.login(values['username'], values['password'], certs, values['rem_pw'])
+
+        ## fasta check code
+        if event == 'fasta_check' and (values['coi'] or values['its'] or values['rbcl']):
+            if values['fasta_path'] == '' or values['output_folder'] == '':
+                sg.popup('Please select input file and output folder.')
+            elif 'session' in locals():
+                window.Hide()
+                check_fasta.main(values['fasta_path'])
+                window.UnHide()
+            else:
+                sg.popup('Please log in first.')
 
         ## search engine for coi
         if event == 'id_eng' and values['coi']:
