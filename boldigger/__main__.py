@@ -31,7 +31,7 @@ def main():
               [sg.Frame(layout = [
               [sg.Text('Select a database'), sg.Radio('COI', 'database', key = 'coi', default = True),
               sg.Radio('ITS', 'database', key = 'its'), sg.Radio('rbcL & matK', 'database', key = 'rbcl'),
-              sg.Spin([i for i in range(1, 101)], initial_value = 100, size = (3, 1), key = 'batch_size'), sg.Text('Batch size')],
+              sg.Spin([i for i in range(1, 51)], initial_value = 50, size = (3, 1), key = 'batch_size'), sg.Text('Batch size')],
               [sg.Text('Select a fasta file'), sg.InputText(size = (40, 1), do_not_clear = True, key = 'fasta_path'), sg.FileBrowse(), sg.Button('Check fasta', key = 'fasta_check'), sg.Button('Run', key = 'id_eng', button_color = ('white', 'red'))]],
               title = 'BOLD identification engine')],
               [sg.Frame(layout = [
