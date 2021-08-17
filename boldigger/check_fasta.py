@@ -27,7 +27,7 @@ def fasta_check(fasta_path):
 
 
         ## loop through the sequence and do inplace changes with N if needed
-        if len([c for c in record.seq if c in valid_chars]) != len(record.seq):
+        if len([c for c in record.seq.upper() if c in valid_chars]) != len(record.seq):
             record.seq = Seq(''.join(c if c in valid_chars else 'N' for c in record.seq))
             seqs[0] += 1
             seqs[1] = 'True'
