@@ -34,7 +34,7 @@ def first_hit(xlsx_path):
 
     ## close and save the writer
     data.to_excel(writer, sheet_name = 'First hit', index = False)
-    writer.save()
+    wb.save(xlsx_path)
     writer.close()
 
 ## main function to control GUI and flow

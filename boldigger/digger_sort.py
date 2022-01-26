@@ -95,7 +95,7 @@ def save_results(xlsx_path, dataframe):
 
     ## close and save the writer
     dataframe.to_excel(writer, sheet_name = 'BOLDigger hit', index = False)
-    writer.save()
+    wb.save(xlsx_path)
     writer.close()
 
 def main(xlsx_path):
