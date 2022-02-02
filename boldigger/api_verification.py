@@ -28,7 +28,7 @@ def tqdm_joblib(tqdm_object):
 def extract_data(xlsx_path, fasta_path):
     ## read in the raw data, extract data that needs to be queried
     try:
-        raw_data = pd.read_excel(xlsx_path, sheet_name = 'BOLDigger hit', nrows = 50)
+        raw_data = pd.read_excel(xlsx_path, sheet_name = 'BOLDigger hit')
     except ValueError:
         return pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
     data_to_check = raw_data.loc[(raw_data['Similarity'] >= 98) & (raw_data['Species'].isnull())].copy()
