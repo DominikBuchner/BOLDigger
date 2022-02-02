@@ -31,7 +31,8 @@ def extract_data(xlsx_path, fasta_path):
         raw_data = pd.read_excel(xlsx_path, sheet_name = 'BOLDigger hit')
     except ValueError:
         return pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
-    data_to_check = raw_data.loc[(raw_data['Similarity'] >= 98) & (raw_data['Species'].isnull())].copy()
+    data_to_check = raw_data.loc[raw_data['Similarity'].astype(str) != 'No Match']
+    data_to_check = data_to_check.loc[(data_to_check['Similarity'] >= 98) & (data_to_check['Species'].isnull())].copy()
 
     ## collect the sequences to query API
     seq_dict = dict(SimpleFastaParser(open(fasta_path, 'r')))
