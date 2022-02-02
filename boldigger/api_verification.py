@@ -1,4 +1,4 @@
-import datetime, contextlib, requests_html, joblib, json, openpyxl
+import datetime, contextlib, requests_html, joblib, json, openpyxl, psutil
 import PySimpleGUI as sg
 import pandas as pd
 import numpy as np
@@ -135,7 +135,7 @@ def main(xlsx_path, fasta_path):
                 session = requests_html.HTMLSession()
 
                 with tqdm_joblib(tqdm(desc="Calling API", total = len(list(seq_dict.items())))) as progress_bar:
-                    result = Parallel(n_jobs = 24)(delayed(request)(item, session) for item in list(seq_dict.items()))
+                    result = Parallel(n_jobs = psutil.cpu_count())(delayed(request)(item, session) for item in list(seq_dict.items()))
 
                 ## remove all hits that did not match
                 result = [res for res in result if res != None]
