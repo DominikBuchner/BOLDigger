@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="boldigger",
-    version="1.3.1",
+    version="1.3.2",
     author="Dominik Buchner",
     author_email="dominik.buchner524@googlemail.com",
     description="A python package to query different databases of boldsystems.org",
@@ -26,7 +26,10 @@ setuptools.setup(
                         'html5lib >= 1.0.1',
                         'xlrd >= 1.2.0',
                         'luddite >= 1.0.1',
-                        'biopython >= 1.78'],
+                        'biopython >= 1.78',
+                        'joblib >= 1.1.0',
+                        'psutil >= 5.8.0',
+                        'tqdm >= 4.56.0'],
     include_package_data = True,
     classifiers=[
         "Programming Language :: Python :: 3",
