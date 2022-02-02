@@ -60,16 +60,21 @@ def refresh_data(result, raw_data, data_to_check, session):
     result = pd.DataFrame(result, columns = ['ID', 'tax', 'BOLD_ID'])
     result['ID'] = ('>' + result['ID'])
     result['genus'], result['species'] = result['tax'].str.split(' ', n = 1).str[0], result['tax'].str.split(' ', n = 1).str[1]
+    result['Status'] = 'Published'
+    result['Flags'] = '5'
 
     ## generate dicts to map to the input table
     genus = dict(zip(result['ID'], result['genus']))
     species = dict(zip(result['ID'], result['species']))
     bold_ids = dict(zip(result['ID'], result['BOLD_ID']))
+    status = dict(zip(result['ID'], result['Status']))
+    flags = dict(zip(result['ID'], result['Flags']))
 
     ## correct the original dataframe
     data_to_check['Genus'] = data_to_check['ID'].map(genus).fillna(data_to_check['Genus'])
     data_to_check['Species'] = data_to_check['ID'].map(species).fillna(data_to_check['Species'])
-    data_to_check['Flags'], data_to_check['Status'] = '5', 'Published'
+    data_to_check['Status'] = data_to_check['ID'].map(status).fillna(data_to_check['Status'])
+    data_to_check['Flags'] = data_to_check['ID'].map(flags).fillna(data_to_check['Flags'])
 
     ## collect remaining higher level taxonomy for species where it is missing
     remaining_data = data_to_check[data_to_check.isnull().any(axis = 1)]
