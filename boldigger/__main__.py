@@ -4,6 +4,7 @@ from boldigger import login, boldblast_coi, boldblast_its, boldblast_rbcl, addit
 from boldigger import first_hit, jamp_hit, digger_sort
 from boldigger import check_fasta
 from contextlib import contextmanager
+from boldigger import api_verification
 
 ## get image data for the GUI
 logo = pkgutil.get_data(__name__, 'data/logo.png')
@@ -41,7 +42,11 @@ def main():
               [sg.Text('Select a method to determine the top hit (BOLDigger method requires additional data)')],
               [sg.Radio('Use first hit', 'sort_method', key = 'firsthit', default = True), sg.Radio('JAMP Pipeline', 'sort_method', key = 'jamp'), sg.Radio('BOLDigger', 'sort_method', key = 'digger'), sg.Button('Run', key = 'tophit', button_color = ('white', 'red'))]],
               title = 'Add a list of top hits')],
-              [sg.Button('Exit'), sg.Text('version: {}'.format(version)), sg.Button(image_data = github, key = 'github', pad = ((640, 0), 0))] #
+              [sg.Frame(layout = [
+              [sg.Text('Select a BOLDResults file'), sg.InputText(size = (40, 1), do_not_clear = True, key = 'xlsx_path_api'), sg.FileBrowse()],
+              [sg.Text('Select corresponding fasta file'), sg.InputText(size = (40, 1), do_not_clear = True, key = 'fasta_path_api'), sg.FileBrowse() , sg.Button('Run', key = 'query_api', button_color = ('white', 'red'))]],
+              title = 'Download additional identification data via BOLD API')],
+              [sg.Button('Exit'), sg.Text('version: {}'.format(version)), sg.Button(image_data = github, key = 'github', pad = ((640, 0), 0))]
               ]
 
     window = sg.Window('BOLDigger', layout)
@@ -114,7 +119,7 @@ def main():
             additional_data.main(values['resultpath'])
             window.UnHide()
 
-        ## addint top hits code
+        ## adding top hits code
         if event == 'tophit':
             if values['resultpath'] == '':
                 sg.popup('Please select a resultfile first.')
@@ -129,6 +134,15 @@ def main():
             elif values['digger']:
                 window.Hide()
                 digger_sort.main(values['resultpath'])
+                window.UnHide()
+
+        ## api code
+        if event == 'query_api':
+            if values['xlsx_path_api'] == '' or values['fasta_path_api'] == '':
+                sg.popup('Please select resultfile and fasta file.')
+            else:
+                window.Hide()
+                api_verification.main(values['xlsx_path_api'], values['fasta_path_api'])
                 window.UnHide()
 
         if event == 'github':
