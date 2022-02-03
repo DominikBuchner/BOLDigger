@@ -84,6 +84,13 @@ There are currently 4 flags implemented, which will be updated if needed:
 
 A closer look at all flagged hits is advised since they represent a certain degree of uncertainty for the selected hit.
 
+## Correction of top hits via BOLD API
+
+This option scans the BOLDigger top hits for hits with high similarity (>= 98%) and missing species-level assignment.
+This can happen, if the top 20 hits are populated with high similarity hits and missing species-level assignment "hide" away better hits.
+Those are queried against the BOLD identification API and corrected with the most common name in the published hits.
+The results will be saved in a new tab in the BOLDResults file for further inspection.
+
 ## Still to do
 
 * Implement the identification engine API for quick analyses
