@@ -91,7 +91,7 @@ def refresh_data(result, raw_data, data_to_check, session):
         r = session.get('http://www.boldsystems.org/index.php/API_Public/specimen?ids={}&format=json'.format('|'.join(id_pack)))
         r = json.loads(r.text)['bold_records']['records']
         ## loop through the ids of the response, collect data, append to responses
-        for key in r.keys():
+        for key in id_pack:
             responses[key] = (r[key]['taxonomy']['phylum']['taxon']['name'],
                               r[key]['taxonomy']['class']['taxon']['name'],
                               r[key]['taxonomy']['order']['taxon']['name'],
@@ -176,3 +176,5 @@ def main(xlsx_path, fasta_path):
             break
 
     window.close()
+
+main('E:\\ScanDNA Analyse\\apscale_ScanDNA\\7_otu_clustering\\BOLDResults_apscale_ScanDNA_OTUs.xlsx', 'E:\\ScanDNA Analyse\\apscale_ScanDNA\\7_otu_clustering\\apscale_ScanDNA_OTUs_done.fasta')
