@@ -176,5 +176,3 @@ def main(xlsx_path, fasta_path):
             break
 
     window.close()
-
-main('E:\\ScanDNA Analyse\\apscale_ScanDNA\\7_otu_clustering\\BOLDResults_apscale_ScanDNA_OTUs.xlsx', 'E:\\ScanDNA Analyse\\apscale_ScanDNA\\7_otu_clustering\\apscale_ScanDNA_OTUs_done.fasta')
