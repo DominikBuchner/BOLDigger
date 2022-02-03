@@ -80,6 +80,8 @@ There are currently 4 flags implemented, which will be updated if needed:
 
 4. The top hit result represents a unique hit of the top 20 hits.
 
+5. The hit has been corrected via the API correction tool.
+
 A closer look at all flagged hits is advised since they represent a certain degree of uncertainty for the selected hit.
 
 ## Still to do
