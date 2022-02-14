@@ -1,12 +1,12 @@
-import requests_html, openpyxl, ntpath, os, datetime
+import requests_html, openpyxl, ntpath, os, datetime, asyncio
 import PySimpleGUI as sg
 import numpy as np
 import pandas as pd
 from pathlib import Path
 from bs4 import BeautifulSoup as BSoup
-from requests.exceptions import ConnectionError
-from requests.exceptions import ReadTimeout
 from openpyxl.utils.dataframe import dataframe_to_rows
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
 ## function to return slices of a list as a list of lists
 ## slices([1, 2, 3, 4, 5], 2) --> [[1,2], [3,4], [5]]
@@ -56,19 +56,22 @@ def post_request(query, session):
     ## return the data
     return data
 
-## function to fetch html from a list of links
-## needs a progressbar variable to pass the progress bar of the window
-def requests(url_list, progressbar):
+## asynchronous request code to send all requests at once
+async def as_request(url, as_session):
+    r = await as_session.get(url, timeout = 300)
+    return r.text
 
-    html = []
-
-    with requests_html.HTMLSession() as session:
-        for url in url_list:
-            r = session.get(url)
-            html.append(r.text)
-            progressbar.UpdateBar(round(100 / len(url_list) * (url_list.index(url) + 1)))
-
-    return html
+## generate an async session and add adapters to it
+## gather all tasks for the event loop
+async def as_session(url_list):
+    as_session = requests_html.AsyncHTMLSession()
+    as_session.headers.update({"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.82 Safari/537.36"})
+    retry_strategy = Retry(total = 10, status_forcelist = [400, 401, 403, 404, 429, 500, 502, 503, 504], backoff_factor = 1)
+    adapter = HTTPAdapter(max_retries = retry_strategy)
+    as_session.mount('https://', adapter)
+    as_session.mount('http://', adapter)
+    tasks = (as_request(url, as_session) for url in url_list)
+    return await asyncio.gather(*tasks)
 
 ## function to convert returned html in dataframes
 def save_as_df(html_list, sequence_names):
@@ -180,17 +183,14 @@ def main(session, fasta_path, output_path, query_length):
 
     ## define a layout for the new window
     layout = [
-    [sg.Text('', size = (15, 1), key = 'bar_des1'), sg.ProgressBar(len(querys), orientation = 'h', size = (20, 20), key = 'bar1')],
-    [sg.Text('', size = (15, 1), key = 'bar_des2'), sg.ProgressBar(100, orientation = 'h', size = (20, 20), key = 'bar2')],
+    [sg.Text('Progress', size = (8, 1), key = 'bar_des1'), sg.ProgressBar(len(querys), orientation = 'h', size = (25, 20), key = 'bar1')],
     [sg.Multiline(size = (50, 10), key = 'out', autoscroll = True)]
     ]
 
     ## run the request loop only once set ran to True afterwards
     window = sg.Window('BOLD identification engine', layout)
     bar1 = window['bar1']
-    bar2 = window['bar2']
     ran = False
-    error = False
 
     ## main loop to control the window
     while True:
@@ -202,70 +202,41 @@ def main(session, fasta_path, output_path, query_length):
             for query in querys:
                 event, values = window.read(timeout = 100)
 
-                ## stop if there are 3 connectionerrors or timeouts
-                error_count = 0
-                ## request until you get a good answer from the server
-                while error_count < 3:
+                ## update the window and give user output
+                window['out'].print('%s: Requesting BOLD. This will take a while.' % datetime.datetime.now().strftime("%H:%M:%S"))
+                window.Refresh()
 
-                    ## update the window and give user output
-                    window['out'].print('%s: Requesting BOLD. This will take a while.' % datetime.datetime.now().strftime("%H:%M:%S"))
-                    window['bar_des1'].update('Requesting BOLD')
-                    window.Refresh()
+                ## collect IDS result urls from BOLD
+                links = post_request(query, session)
 
-                    ## try to get a answer from bold server, repeat in case of timeout
-                    try:
-                        links = post_request(query, session)
-                    except ConnectionError:
-                        window['out'].print('%s: ConnectionError, BOLD did not respond properly: Trying to reconnect.' % datetime.datetime.now().strftime("%H:%M:%S"))
-                        window.Refresh()
-                        error_count += 1
-                        continue
-                    except ReadTimeout:
-                        window['out'].print('%s: Readtimeout, BOLD did not respond in time: Trying to reconnect.' % datetime.datetime.now().strftime("%H:%M:%S"))
-                        window.Refresh()
-                        error_count += 1
-                        continue
-                    break
-                else:
-                    error = True
-                    ran = True
+                ## updat the first progress bar
+                bar1.UpdateBar(querys.index(query) + 1)
 
-                if not error:
-                    ## update the first progress bar
-                    bar1.UpdateBar(querys.index(query) + 1)
+                ## download the data from the links
+                window['out'].print('%s: Downloading results.' % datetime.datetime.now().strftime("%H:%M:%S"))
+                window.Refresh()
 
-                    ## download the data from the links
-                    window['bar_des2'].update('Downloading results')
-                    window['out'].print('%s: Downloading results.' % datetime.datetime.now().strftime("%H:%M:%S"))
-                    window.Refresh()
-                    html_list = requests(links, bar2)
+                ## get all urls at the same time
+                html_list = asyncio.run(as_session(links))
 
+                ## parse the returned html
+                window['out'].print('%s: Parsing html.' % datetime.datetime.now().strftime("%H:%M:%S"))
+                window.Refresh()
+                dataframes = save_as_df(html_list, sequences_names[querys.index(query)])
 
-                    ## parse the returned html
-                    window['out'].print('%s: Parsing html.' % datetime.datetime.now().strftime("%H:%M:%S"))
-                    window.Refresh()
-                    dataframes = save_as_df(html_list, sequences_names[querys.index(query)])
+                ## save results in the results file
+                window['out'].print('%s: Saving results.' % datetime.datetime.now().strftime("%H:%M:%S"))
+                window.Refresh()
+                save_results(dataframes, fasta_path, output_path)
 
-                    ## save results in the results file
-                    window['out'].print('%s: Saving results.' % datetime.datetime.now().strftime("%H:%M:%S"))
-                    window.Refresh()
-                    save_results(dataframes, fasta_path, output_path)
-
-                    ## remove found OTUS from fasta and write it into a new one
-                    window['out'].print('%s: Removing finished OTUs from fasta.' % datetime.datetime.now().strftime("%H:%M:%S"))
-                    window.Refresh()
-                    fasta_rewrite(fasta_path, query_length)
-
-                    ## set download bar to 0
-                    bar2.UpdateBar(0)
-                else:
-                    window['out'].print('%s: Too many bad connections. Try a smaller batch size. Close to continue.' % datetime.datetime.now().strftime("%H:%M:%S"))
-                    break
+                ## remove found OTUS from fasta and write it into a new one
+                window['out'].print('%s: Removing finished OTUs from fasta.' % datetime.datetime.now().strftime("%H:%M:%S"))
+                window.Refresh()
+                fasta_rewrite(fasta_path, query_length)
 
             ran = True
 
-        if not error:
-            window['out'].print('%s: Done. Close to continue.' % datetime.datetime.now().strftime("%H:%M:%S"))
+        window['out'].print('%s: Done. Close to continue.' % datetime.datetime.now().strftime("%H:%M:%S"))
         window.Refresh()
         event, values = window.read()
 

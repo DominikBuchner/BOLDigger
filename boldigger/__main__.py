@@ -1,9 +1,8 @@
 import PySimpleGUI as sg
-import pkgutil, json, ast, webbrowser, pkg_resources, os, sys, luddite
+import pkgutil, webbrowser, pkg_resources, luddite, ast
 from boldigger import login, boldblast_coi, boldblast_its, boldblast_rbcl, additional_data
 from boldigger import first_hit, jamp_hit, digger_sort
 from boldigger import check_fasta
-from contextlib import contextmanager
 from boldigger import api_verification
 
 ## get image data for the GUI
