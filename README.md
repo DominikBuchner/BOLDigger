@@ -94,3 +94,4 @@ The results will be saved in a new tab in the BOLDResults file for further inspe
 ## Still to do
 
 * Implement the identification engine API for quick analyses
+* rework the command-line version with the new methods - will take some time
