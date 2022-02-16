@@ -1,4 +1,4 @@
-import requests_html, openpyxl, ntpath, os, datetime, asyncio
+import requests_html, openpyxl, ntpath, os, datetime, asyncio, operator
 import PySimpleGUI as sg
 import numpy as np
 import pandas as pd
@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup as BSoup
 from openpyxl.utils.dataframe import dataframe_to_rows
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
+from functools import reduce
 
 ## function to return slices of a list as a list of lists
 ## slices([1, 2, 3, 4, 5], 2) --> [[1,2], [3,4], [5]]
@@ -58,98 +59,79 @@ def post_request(query, session):
 
 ## asynchronous request code to send all requests at once
 async def as_request(url, as_session):
-    r = await as_session.get(url, timeout = 300)
-    return r.text
+    ## add all requests to the eventloop, in case of a malformed response readd them to the event loop until
+    ## a correct response can be scraped
+    while True:
+        try:
+            r = await as_session.get(url, timeout = 300)
+            tables = pd.read_html(r.text, header = 0, converters = {'Similarity (%)': float}, flavor = 'html5lib')
+            break
+        except ValueError:
+            continue
+
+    ## return No Match if there is no result table
+    if len(tables) == 2:
+        table = pd.DataFrame([['No Match'] * 7 + [np.nan] + [''] * 2] * 20,
+                             columns = ['Phylum', 'Class', 'Order', 'Family', 'Genus', 'Species', 'Subspecies', 'Similarity', 'Status', 'Process_ID'])
+
+    ## return result if there is one
+    elif len(tables) == 3:
+        table = tables[1]
+        ids = BSoup(r.text, 'html5lib')
+        ids = [tag.get('id') for tag in ids.find_all(class_ = 'publicrecord')]
+        table.columns = ['Phylum', 'Class', 'Order', 'Family', 'Genus', 'Species', 'Subspecies', 'Similarity', 'Status']
+        table['Process_ID'] = [ids.pop(0) if status else np.nan for status in np.where(table['Status'] == 'Published', True, False)]
+        table[['Phylum', 'Class', 'Order', 'Family', 'Genus', 'Species', 'Subspecies', 'Status']] = table[['Phylum', 'Class', 'Order', 'Family', 'Genus', 'Species', 'Subspecies', 'Status']].fillna('')
+
+    return table
 
 ## generate an async session and add adapters to it
 ## gather all tasks for the event loop
 async def as_session(url_list):
     as_session = requests_html.AsyncHTMLSession()
     as_session.headers.update({"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.82 Safari/537.36"})
-    retry_strategy = Retry(total = 10, status_forcelist = [400, 401, 403, 404, 429, 500, 502, 503, 504], backoff_factor = 1)
+    retry_strategy = Retry(total = 15, status_forcelist = [400, 401, 403, 404, 413, 429, 500, 502, 503, 504], backoff_factor = 1)
     adapter = HTTPAdapter(max_retries = retry_strategy)
     as_session.mount('https://', adapter)
     as_session.mount('http://', adapter)
     tasks = (as_request(url, as_session) for url in url_list)
     return await asyncio.gather(*tasks)
 
-## function to convert returned html in dataframes
-def save_as_df(html_list, sequence_names):
+## function to concat the returned dataframes
+def save_as_df(tables, sequence_names):
 
-    ## create a soup of every result page that is returned by requests
-    soups = [BSoup(html, 'html5lib') for html in html_list]
-    ## find the resulttable in the html
-    tables = [soup.find('table', class_ = 'resultsTable noborder') for soup in soups]
+    ## concat the resulting tables from the requested resultpages
+    result = pd.concat(tables, axis = 0)
 
-    ## if None is returned add a NoMatch table instead
-    ## create nomatch table before creating rest of dataframes
-    nomatch_array = np.array([['No Match'] * 9 + [''] for i in range(20)])
-    nomatch_df = pd.DataFrame(nomatch_array)
-    nomatch_df.columns = ['Phylum', 'Class', 'Order', 'Family', 'Genus', 'Species', 'Subspecies', 'Similarity (%)', 'Status', 'Process ID']
+    ## add sequence names to the results
+    result.insert(0,'You_searched_for', reduce(operator.concat, [[name] + [np.nan] * 19 for name in sequence_names]))
 
-    ## read the table to a data frame, is no table is there soup.find returns None and a Nomatch dataframe is added
-    dataframes = [pd.read_html(str(table), header = 0)[0] if table != None else nomatch_df for table in tables]
+    ## return the resulting dataframe
+    return result
 
-    ## extract the process ids from the html
-    process_id_lists = [soup.find_all(class_ = 'publicrecord') for soup in soups]
-    process_id_lists = [[process_id_list[i] for i in range(len(process_id_list))] for process_id_list in process_id_lists]
-    process_id_lists = [[tag.get('id') for tag in process_id_list] for process_id_list in process_id_lists]
-
-    ## add process IDs to published sequence
-    for index in range(len(dataframes)):
-        if process_id_lists[index]:
-            statuslist = list(np.where(dataframes[index]['Status'] == 'Published', True, False))
-            statuslist = [process_id_lists[index].pop(0) if status else '' for status in statuslist]
-            dataframes[index]['Process ID'] = statuslist
-        else:
-            dataframes[index]['Process ID'] = ''
-
-    ## save columns before to sort them after
-    cols = dataframes[index].columns.tolist()
-    ## add sequence names to dataframes
-    for index in range(len(dataframes)):
-        ## add sequence names
-        dataframes[index].at[0, 'You searched for:'] = sequence_names[index]
-        dataframes[index] = dataframes[index][['You searched for:'] + cols]
-
-    ## return all dataframe --> One dataframe per requestes sequences is returned
-    return dataframes
-
-## function to save results to an excel file as output
-def save_results(dataframes, fasta_path, output_path):
+## function to save results to hdf format. This greatly increased writing and reading times
+def save_results(dataframe, fasta_path, output_path):
 
     ## savename is always BOLDResults_ + name of fasta that is searched for
     ## savepath is always the result folder in the boldigger path
-    savename = 'BOLDResults_' + ntpath.splitext(ntpath.basename(fasta_path))[0] + '.xlsx'
+    ## files are saved in hdf format while runtime, will be transformed to excel as soon as requests are done
+    savename = 'BOLDResults_{}.h5.lz'.format(ntpath.splitext(ntpath.basename(fasta_path))[0])
 
-    ## open resultsfile if it exists, create if it does not
-    try:
-        wb = openpyxl.load_workbook(os.path.join(output_path, savename))
-    except FileNotFoundError:
-        wb = openpyxl.Workbook()
+    ## set size limits for the columns, maybe need to change in the future but should cover most taxa names
+    sizes = {'You_searched_for': 100,
+             'Phylum': 80,
+             'Class': 80,
+             'Order': 80,
+             'Family': 80,
+             'Genus': 80,
+             'Species': 80,
+             'Subspecies': 80,
+             'Status' : 15,
+             'Process_ID': 25}
 
-    ## select and name worksheet
-    ws = wb.active
-    ws.title = "Run %s" % datetime.datetime.now().strftime("%d-%m-%Y %H.%M")
-
-    ## wirte data to sheet
-    for df in dataframes:
-        for r in dataframe_to_rows(df, index = False, header = False):
-            ws.append(r)
-
-    ## finalize only once with a header
-    if ws.cell(row = 1, column = 1).value != 'You searched for':
-        ## add a row and a column at for header and otus
-        ws.insert_rows(1)
-
-        ## add header to resultfile
-        header = ['You searched for', 'Phylum', 'Class', 'Order', 'Family', 'Genus', 'Species', 'Subspecies', 'Similarity', 'Status', 'Process ID']
-
-        for column in range(len(header)):
-            ws.cell(row = 1, column = column + 1).value = header[column]
-
-    ## save workbook
-    wb.save(os.path.join(output_path, savename))
+    ## apend results to the hdf output file, compress result
+    with pd.HDFStore(os.path.join(output_path, savename), mode = 'a', complib = 'blosc:blosclz', complevel = 9) as storage:
+        storage.append('results', dataframe, format = 't', data_columns = True, min_itemsize = sizes, complib = 'blosc:blosclz', complevel = 9)
 
 ## function to move query size sequences to the same file with the extension _done
 ## in case of crash of the script you can just start it again without changing
@@ -176,6 +158,20 @@ def fasta_rewrite(fasta_path, query_size):
     ## remove the empty fasta in the end
     if os.stat(fasta_path).st_size == 0:
         os.remove(fasta_path)
+
+## function to convert downloaded h5 data to excel in the end
+def excel_converter(fasta_path, output_path):
+
+    ## generate both savenames
+    savename_h5 = 'BOLDResults_{}.h5.lz'.format(ntpath.splitext(ntpath.basename(fasta_path))[0])
+    savename_excel = 'BOLDResults_{}.xlsx'.format(ntpath.splitext(ntpath.basename(fasta_path))[0])
+
+    ## read the data, rename the columns for backwards compability
+    data = pd.read_hdf(os.path.join(output_path, savename_h5))
+    data.columns = ['You searched for', 'Phylum', 'Class', 'Order', 'Family', 'Genus', 'Species', 'Subspecies', 'Similarity', 'Status', 'Process ID']
+
+    ## push the data to excel file
+    data.to_excel(os.path.join(output_path, savename_excel), index = False, sheet_name = "Run {}".format(datetime.datetime.now().strftime("%d-%m-%Y %H.%M")))
 
 def main(session, fasta_path, output_path, query_length):
     ## define some variables needed for the layout
@@ -217,22 +213,26 @@ def main(session, fasta_path, output_path, query_length):
                 window.Refresh()
 
                 ## get all urls at the same time
-                html_list = asyncio.run(as_session(links))
+                tables = asyncio.run(as_session(links))
 
                 ## parse the returned html
                 window['out'].print('%s: Parsing html.' % datetime.datetime.now().strftime("%H:%M:%S"))
                 window.Refresh()
-                dataframes = save_as_df(html_list, sequences_names[querys.index(query)])
+                result = save_as_df(tables, sequences_names[querys.index(query)])
 
                 ## save results in the results file
                 window['out'].print('%s: Saving results.' % datetime.datetime.now().strftime("%H:%M:%S"))
                 window.Refresh()
-                save_results(dataframes, fasta_path, output_path)
+                save_results(result, fasta_path, output_path)
 
                 ## remove found OTUS from fasta and write it into a new one
                 window['out'].print('%s: Removing finished OTUs from fasta.' % datetime.datetime.now().strftime("%H:%M:%S"))
                 window.Refresh()
                 fasta_rewrite(fasta_path, query_length)
+
+            ## convert results to excel when download is finished
+            window['out'].print('%s: Converting the data to excel.' % datetime.datetime.now().strftime("%H:%M:%S"))
+            excel_converter(fasta_path, output_path)
 
             ran = True
 

@@ -1,13 +1,14 @@
 import openpyxl, datetime
 import pandas as pd
 import PySimpleGUI as sg
+import numpy as np
 
 ## function to return the threshold for an OTU dataframe, returns No Match for No Matches
 ## also returns a level to group by for later use
 def get_threshold(df):
     threshold = df['Similarity'][0]
 
-    if threshold == 'No Match':
+    if threshold == 'placeholder':
         return 'No Match', None
     elif threshold >= 98:
         return 98, ['Genus', 'Species']
@@ -48,7 +49,7 @@ def jamp_hit(df):
 
     ## if no match simply return a nomatch df
     if threshold == 'No Match':
-        return df.query("Species == 'No Match'").head(1)
+        return df.query("Species == 'No Match'").head(1).replace('placeholder', np.nan)
 
     ## cut all values below the threshold
     otu_df = df.loc[df['Similarity'] >= threshold]
@@ -65,7 +66,7 @@ def jamp_hit(df):
         hit = otu_df.query("%s == '%s'" % (level[0], out[0])).head(1)
 
     ## remove the placeholder
-    hit = hit.replace('placeholder', '')
+    hit = hit.replace('placeholder', np.nan)
 
     ## define level to remove them from low level hits
     levels = ['Class', 'Order', 'Family', 'Genus', 'Species']

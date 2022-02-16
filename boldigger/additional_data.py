@@ -17,7 +17,7 @@ def retrieve_process_ids(xlsx_path):
     if sheet.cell(row = 1, column = 11).value == 'Process ID':
         type = 'coi'
         process_ids = [sheet.cell(row = row, column = 11).value for row in range(2, sheet.max_row + 1) if sheet.cell(row = row, column = 11).value != None and sheet.cell(row = row, column = 11).value != '']
-    elif sheet.cell(row = 1, column = 11).value == 'Similarity (%)':
+    elif sheet.cell(row = 1, column = 11).value == 'Similarity':
         type = 'its_rbcl'
         process_ids = [sheet.cell(row = row, column = 14).value for row in range(2, sheet.max_row + 1) if sheet.cell(row = row, column = 14).value != None and sheet.cell(row = row, column = 14).value != '']
     else:

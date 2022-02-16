@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 from bs4 import BeautifulSoup as BSoup
 from openpyxl.utils.dataframe import dataframe_to_rows
-from boldigger.boldblast_coi import slices, fasta_to_string, fasta_rewrite, as_request, as_session
-from boldigger.boldblast_its import save_as_df, save_results
+from boldigger.boldblast_coi import slices, fasta_to_string, fasta_rewrite
+from boldigger.boldblast_its import save_as_df, save_results, as_request, as_session, save_as_df, save_results, excel_converter
 
 ## function to generate a link for every query
 def post_request(query, session):
@@ -67,22 +67,26 @@ def main(session, fasta_path, output_path, query_length):
                 window.Refresh()
 
                 ## get all urls at the same time
-                html_list = asyncio.run(as_session(links))
+                tables = asyncio.run(as_session(links))
 
                 ## parse the returned html
                 window['out'].print('%s: Parsing html.' % datetime.datetime.now().strftime("%H:%M:%S"))
                 window.Refresh()
-                dataframes = save_as_df(html_list, sequences_names[querys.index(query)])
+                result = save_as_df(tables, sequences_names[querys.index(query)])
 
                 ## save results in the results file
                 window['out'].print('%s: Saving results.' % datetime.datetime.now().strftime("%H:%M:%S"))
                 window.Refresh()
-                save_results(dataframes, fasta_path, output_path)
+                save_results(result, fasta_path, output_path)
 
                 ## remove found OTUS from fasta and write it into a new one
                 window['out'].print('%s: Removing finished OTUs from fasta.' % datetime.datetime.now().strftime("%H:%M:%S"))
                 window.Refresh()
                 fasta_rewrite(fasta_path, query_length)
+
+            ## convert results to excel when download is finished
+            window['out'].print('%s: Converting the data to excel.' % datetime.datetime.now().strftime("%H:%M:%S"))
+            excel_converter(fasta_path, output_path)
 
             ran = True
 
