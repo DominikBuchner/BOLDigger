@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup as BSoup
 from openpyxl.utils.dataframe import dataframe_to_rows
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
+from requests.exceptions import ReadTimeout
 from functools import reduce
 
 ## function to return slices of a list as a list of lists
@@ -196,34 +197,40 @@ def main(session, fasta_path, output_path, query_length):
 
             ## request as long as there are querys left
             for query in querys:
-                event, values = window.read(timeout = 100)
+                while True:
+                    try:
+                        event, values = window.read(timeout = 100)
 
-                ## update the window and give user output
-                window['out'].print('%s: Requesting BOLD. This will take a while.' % datetime.datetime.now().strftime("%H:%M:%S"))
-                window.Refresh()
+                        ## update the window and give user output
+                        window['out'].print('%s: Requesting BOLD. This will take a while.' % datetime.datetime.now().strftime("%H:%M:%S"))
+                        window.Refresh()
 
-                ## collect IDS result urls from BOLD
-                links = post_request(query, session)
+                        ## collect IDS result urls from BOLD
+                        links = post_request(query, session)
 
-                ## updat the first progress bar
-                bar1.UpdateBar(querys.index(query) + 1)
+                        ## updat the first progress bar
+                        bar1.UpdateBar(querys.index(query) + 1)
 
-                ## download the data from the links
-                window['out'].print('%s: Downloading results.' % datetime.datetime.now().strftime("%H:%M:%S"))
-                window.Refresh()
+                        ## download the data from the links
+                        window['out'].print('%s: Downloading results.' % datetime.datetime.now().strftime("%H:%M:%S"))
+                        window.Refresh()
 
-                ## get all urls at the same time
-                tables = asyncio.run(as_session(links))
+                        ## get all urls at the same time
+                        tables = asyncio.run(as_session(links))
 
-                ## parse the returned html
-                window['out'].print('%s: Parsing html.' % datetime.datetime.now().strftime("%H:%M:%S"))
-                window.Refresh()
-                result = save_as_df(tables, sequences_names[querys.index(query)])
+                        ## parse the returned html
+                        window['out'].print('%s: Parsing html.' % datetime.datetime.now().strftime("%H:%M:%S"))
+                        window.Refresh()
+                        result = save_as_df(tables, sequences_names[querys.index(query)])
 
-                ## save results in the results file
-                window['out'].print('%s: Saving results.' % datetime.datetime.now().strftime("%H:%M:%S"))
-                window.Refresh()
-                save_results(result, fasta_path, output_path)
+                        ## save results in the results file
+                        window['out'].print('%s: Saving results.' % datetime.datetime.now().strftime("%H:%M:%S"))
+                        window.Refresh()
+                        save_results(result, fasta_path, output_path)
+                    except (ValueError, ReadTimeout):
+                        window['out'].print('%s: BOLD did not respond! Retrying.' % datetime.datetime.now().strftime("%H:%M:%S"))
+                        continue
+                    break
 
                 ## remove found OTUS from fasta and write it into a new one
                 window['out'].print('%s: Removing finished OTUs from fasta.' % datetime.datetime.now().strftime("%H:%M:%S"))
