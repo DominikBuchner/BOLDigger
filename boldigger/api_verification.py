@@ -85,20 +85,20 @@ def refresh_data(result, raw_data, data_to_check, session):
     id_values = list(slices(list(bold_ids.values()), 100))
 
     ## collect responses here
-    responses =  {}
+    responses =  []
     ## request ids
     for id_pack in id_values:
         r = session.get('http://www.boldsystems.org/index.php/API_Public/specimen?ids={}&format=json'.format('|'.join(id_pack)))
         r = json.loads(r.text)['bold_records']['records']
         ## loop through the ids of the response, collect data, append to responses
         for key in id_pack:
-            responses[key] = (r[key]['taxonomy']['phylum']['taxon']['name'],
+            responses.append((r[key]['taxonomy']['phylum']['taxon']['name'],
                               r[key]['taxonomy']['class']['taxon']['name'],
                               r[key]['taxonomy']['order']['taxon']['name'],
-                              r[key]['taxonomy']['family']['taxon']['name'])
+                              r[key]['taxonomy']['family']['taxon']['name']))
 
     ## write the additional taxonomic information to a new dataframe and concat it to the one that's missing the data
-    additional_tax = pd.DataFrame([responses[key] for key in responses.keys()],
+    additional_tax = pd.DataFrame(responses,
                                   columns = ['Phylum', 'Class', 'Order', 'Family'],
                                   index = remaining_data.index)
 
