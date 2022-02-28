@@ -165,14 +165,18 @@ def excel_converter(fasta_path, output_path):
 
     ## generate both savenames
     savename_h5 = 'BOLDResults_{}.h5.lz'.format(ntpath.splitext(ntpath.basename(fasta_path))[0])
-    savename_excel = 'BOLDResults_{}.xlsx'.format(ntpath.splitext(ntpath.basename(fasta_path))[0])
 
     ## read the data, rename the columns for backwards compability
     data = pd.read_hdf(os.path.join(output_path, savename_h5))
     data.columns = ['You searched for', 'Phylum', 'Class', 'Order', 'Family', 'Genus', 'Species', 'Subspecies', 'Similarity', 'Status', 'Process ID']
 
+    ## split the data in 1 million row parts to fit in excel
+    parts = enumerate(slices(range(len(data.index)), 1000000))
     ## push the data to excel file
-    data.to_excel(os.path.join(output_path, savename_excel), index = False, sheet_name = "Run {}".format(datetime.datetime.now().strftime("%d-%m-%Y %H.%M")))
+    for idx, r in parts:
+        savename_excel = 'BOLDResults_{}_part_{}.xlsx'.format(ntpath.splitext(ntpath.basename(fasta_path))[0], idx + 1)
+        k, l = list(r)[0], list(r)[-1] + 1
+        data.iloc[k: l].to_excel(os.path.join(output_path, savename_excel), index = False, sheet_name = "Run {}".format(datetime.datetime.now().strftime("%d-%m-%Y %H.%M")))
 
 def main(session, fasta_path, output_path, query_length):
     ## define some variables needed for the layout
