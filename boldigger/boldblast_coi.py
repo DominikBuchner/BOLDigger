@@ -8,6 +8,7 @@ from openpyxl.utils.dataframe import dataframe_to_rows
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 from requests.exceptions import ReadTimeout
+from requests.exceptions import ConnectionError
 from functools import reduce
 
 ## function to return slices of a list as a list of lists
@@ -231,7 +232,7 @@ def main(session, fasta_path, output_path, query_length):
                         window['out'].print('%s: Saving results.' % datetime.datetime.now().strftime("%H:%M:%S"))
                         window.Refresh()
                         save_results(result, fasta_path, output_path)
-                    except (ValueError, ReadTimeout):
+                    except (ValueError, ReadTimeout, ConnectionError):
                         window['out'].print('%s: BOLD did not respond! Retrying.' % datetime.datetime.now().strftime("%H:%M:%S"))
                         continue
                     break

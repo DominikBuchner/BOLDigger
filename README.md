@@ -96,3 +96,4 @@ The results will be saved in a new tab in the BOLDResults file for further inspe
 * Implement the identification engine API for quick analyses
 * rework the command-line version with the new methods - will take some time
 * Add a failsafe to detect fasta format (2line, line-wrapping) and correct it before starting the search
+* Add failsaves for its and rbcl downloads
