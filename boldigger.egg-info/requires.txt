@@ -1,0 +1,17 @@
+PySimpleGUI>=4.18.2
+requests-html>=0.10.0
+beautifulsoup4>=4.7.1
+openpyxl>=2.6.2
+numpy>=1.16.4
+pandas>=0.25.0
+requests>=2.22.0
+more-itertools>=7.2.0
+lxml>=4.3.3
+html5lib>=1.0.1
+xlrd>=1.2.0
+luddite>=1.0.1
+biopython>=1.78
+joblib>=1.1.0
+psutil>=5.8.0
+tqdm>=4.56.0
+tables>=3.7.0
