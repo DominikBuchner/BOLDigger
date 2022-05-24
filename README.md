@@ -67,6 +67,16 @@ This option uses the first hit and can be used for all markers supported by BOLD
 This option reproduces the output from the [JAMP Pipeline](https://github.com/VascoElbrecht/JAMP). Therefore different thresholds (98%: species level, 95%: genus level, 90%: family level, 85%: order level, <85%: class level) for the taxonomic levels are used to find the best fitting hit.  
 After determining the threshold for all hits the most common hit above the threshold will be selected. Note that for all hits below the threshold the taxonomic resolution will be adjusted accordingly (e.g. for a 96% hit the species level information will be discarded and genus level information will be used as the lowest taxonomic level).
 
+The algorithm works as follows:
+
+1. Find the maximum similarity value of the top 20 hits currently looked at.
+2. Set the threshold to this level, remove all hits with a similarity below this threshold (e.g. if the highest hit has 100% Similarity, the threshold will be set to 98% and all hits below will be removed for the moment.)
+3. Count all individual classifications, sort by abundance.
+4. Drop all classifications that contain missing data (e.g. if the most common hit is "Arthropoda --> Insecta" with a similarity of 100% but missing values for Order, Family, Genus and Species)
+5. Look for the most common hit that has no missing values
+6. If one is found, return that hit.
+7. If none is found, set the threshold to the next higher level and repeat the process until a hit is found.
+
 ### BOLDigger - requires additional data
 
 This option is similar to the JAMP option but flags suspicious hits. **Make sure additional data was downloaded.**

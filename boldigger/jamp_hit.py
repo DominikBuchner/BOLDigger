@@ -11,15 +11,21 @@ def get_threshold(df):
     if threshold == 'placeholder':
         return 'No Match', None
     elif threshold >= 98:
-        return 98, ['Genus', 'Species']
+        return 98, 'Species'
     elif threshold >= 95:
-        return 95, ['Genus']
+        return 95, 'Genus'
     elif threshold >= 90:
-        return 90, ['Family']
+        return 90, 'Family'
     elif threshold >= 85:
-        return 85, ['Order']
+        return 85, 'Order'
     else:
-        return 50, ['Class']
+        return 50, 'Class'
+
+## function to move the treshold one level up if no hit is found, also return the new tax level
+def move_threshold_up(thresh):
+    thresholds = [98, 95, 90, 85, 50]
+    levels = ['Species', 'Genus', 'Family', 'Order', 'Class']
+    return thresholds[thresholds.index(thresh) + 1], levels[thresholds.index(thresh) + 1]
 
 ## function to extract the data from the xlsx path and do some formatting
 def get_data(xlsx_path):
@@ -31,6 +37,7 @@ def get_data(xlsx_path):
     ## check file format
     if list(data.columns.values)[1] != 'Phylum':
         return 'Wrong file'
+
     ## slice the dataframe in one df for each otu and reset the indexes on resultig dfs
     ## rename id after first value in the ID column e.g. > OTUXX
     slices = [data.iloc[i : i + 20] for i in range(0, len(data), 20)]
@@ -41,29 +48,43 @@ def get_data(xlsx_path):
 
 ## accepts a OTU dataframe and returns the JAMP hit as df
 def jamp_hit(df):
-
     ## put a placeholder to all empty cells
     df = df.fillna('placeholder')
 
+    ## get the threshold and level to look for
     threshold, level = get_threshold(df)
 
     ## if no match simply return a nomatch df
     if threshold == 'No Match':
         return df.query("Species == 'No Match'").head(1).replace('placeholder', np.nan)
 
-    ## cut all values below the threshold
-    otu_df = df.loc[df['Similarity'] >= threshold]
+    ## loop through thresholds and levels until a true hit is found
+    while True:
+        ## cut all values below the threshold
+        out_df = df.copy()
+        out_df = out_df.loc[out_df['Similarity'] >= threshold]
 
-    ## group the data by level and count appearence
-    out = pd.DataFrame({'count': otu_df.groupby(level, sort = False).size()}).reset_index()
-    out = out.sort_values('count', ascending = False)
-    out = out.iloc[0].tolist()
+        ## group the data by level and count appearence
+        out_df = pd.DataFrame({'count': out_df.groupby(['Phylum', 'Class', 'Order', 'Family', 'Genus', 'Species'], sort = False).size()}).reset_index()
+        out_df = out_df.sort_values('count', ascending = False)
 
-    ## find the hit in the otu dataframe
-    if len(out) == 3:
-        hit = otu_df.query("%s == '%s' and %s == '%s'" % (level[0], out[0], level[1], out[1])).head(1)
-    else:
-        hit = otu_df.query("%s == '%s'" % (level[0], out[0])).head(1)
+        ## replace placeholder to to drop possible np.nan values at the designated level that mask real hits
+        ## if already at the highest level 'class' there is nothing to drop, then continue
+        out_df = out_df.replace('placeholder', np.nan)
+        if level != 'Class':
+            out_df = out_df.dropna(subset = [level])
+        out_df = out_df.fillna('placeholder')
+
+        ## if no hit remains after removing np.nans, move up one level
+        if out_df.empty:
+            threshold, level = move_threshold_up(threshold)
+            continue
+        ## else return the top hit
+        else:
+            hit = out_df.head(1)
+            hit = df.query("Class == '{}' and Order == '{}' and Family == '{}' and Genus == '{}' and Species == '{}'".format(
+                           hit['Class'].item(), hit['Order'].item(), hit['Family'].item(), hit['Genus'].item(), hit['Species'].item())).head(1)
+            break
 
     ## remove the placeholder
     hit = hit.replace('placeholder', np.nan)
@@ -76,7 +97,7 @@ def jamp_hit(df):
     if threshold == 98:
         return hit
     else:
-        hit = hit.assign(**{k: '' for k in levels[levels.index(level[0]) + 1:]})
+        hit = hit.assign(**{k: '' for k in levels[levels.index(level) + 1:]})
         return hit
 
 def save_results(xlsx_path, dataframe):

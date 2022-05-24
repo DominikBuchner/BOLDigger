@@ -1,7 +1,8 @@
 import openpyxl, datetime
 import pandas as pd
+import numpy as np
 import PySimpleGUI as sg
-from boldigger.jamp_hit import get_data, jamp_hit, get_threshold
+from boldigger.jamp_hit import get_data, jamp_hit, get_threshold, move_threshold_up
 
 
 ## function to get the full dataset including metadata
@@ -37,38 +38,57 @@ def add_flags(jamp_hit, full_data_df):
     if threshold == 'No Match':
         return ''
 
-    ## cut all values below the threshold
-    otu_df = full_data_df.loc[full_data_df['Similarity'] >= threshold]
 
-    ## remove all data below the threshold
+    ## loop through thresholds and levels until a true hit is found
+    while True:
+        ## cut all values below the threshold
+        out_df = full_data_df.copy()
+        out_df = out_df.loc[out_df['Similarity'] >= threshold]
+
+        ## group the data by level and count appearence
+        out_df = pd.DataFrame({'count': out_df.groupby(['Phylum', 'Class', 'Order', 'Family', 'Genus', 'Species'], sort = False).size()}).reset_index()
+        out_df = out_df.sort_values('count', ascending = False)
+
+        ## replace placeholder to to drop possible np.nan values at the designated level that mask real hits
+        ## if already at the highest level 'class' there is nothing to drop, then continue
+        out_df = out_df.replace('placeholder', np.nan)
+        if level != 'Class':
+            out_df = out_df.dropna(subset = [level])
+        out_df = out_df.fillna('placeholder')
+
+        ## if no hit remains after removing np.nans, move up one level
+        if out_df.empty:
+            threshold, level = move_threshold_up(threshold)
+            continue
+        ## else return the top hit
+        else:
+            hit = out_df.head(1)
+            hit = full_data_df.query("Class == '{}' and Order == '{}' and Family == '{}' and Genus == '{}' and Species == '{}'".format(
+                           hit['Class'].item(), hit['Order'].item(), hit['Family'].item(), hit['Genus'].item(), hit['Species'].item()))
+            break
+
     ## define level to remove them from low level hits
     levels = ['Class', 'Order', 'Family', 'Genus', 'Species']
 
-    if threshold != 98:
-        otu_df = otu_df.assign(**{k: '' for k in levels[levels.index(level[0]) + 1:]})
-
-    ## group the data by level and count appearence
-    out = pd.DataFrame({'count': otu_df.groupby(level, sort = False).size()}).reset_index()
-    out = out.sort_values('count', ascending = False)
-    out = out.iloc[0].tolist()
-
-    ## find the hit in the otu dataframe
-    if len(out) == 3:
-        hit = otu_df.query("%s == '%s' and %s == '%s'" % (level[0], out[0], level[1], out[1]))
+    ## return species level information if similarity is high enough
+    ## else remove higher level information form output depending on level
+    if threshold == 98:
+        pass
     else:
-        hit = otu_df.query("%s == '%s'" % (level[0], out[0]))
+        hit = hit.assign(**{k: '' for k in levels[levels.index(level) + 1:]})
 
     flags = [False, False, False, False]
+    
     ## FLAG 1: Reverse BIN taxonomy detected ##
     id_method = hit['Identification Method']
 
-    ## flags in the identication method column are "BOLD ID-Engine", "BIN Taxonomy Match" and "Tree based identification"
+    ## flags in the identification method column are "BOLD ID-Engine", "BIN Taxonomy Match" and "Tree based identification"
     if id_method.str.startswith('BOLD').any() or id_method.str.startswith('ID').any() or id_method.str.startswith('Tree').any():
         flags[0] = True
 
     ## FLAG 2: More than 1 taxonomic group above the selected threshold
     ## group the data by level and count appearence, get a copy of the original data first
-    out = pd.DataFrame({'count': otu_df.groupby(level, sort = False).size()}).reset_index()
+    out = pd.DataFrame({'count': out_df.groupby(level, sort = False).size()}).reset_index()
     if len(out) > 1:
         flags[1] = True
 
