@@ -120,7 +120,7 @@ def save_results(dataframe, fasta_path, output_path):
     savename = 'BOLDResults_{}.h5.lz'.format(ntpath.splitext(ntpath.basename(fasta_path))[0])
 
     ## make all nan columns compatible with hdf format
-    dataframe = dataframe.replace(np.nan, '')
+    dataframe['Status'] = dataframe['Status'].replace(np.nan, '')
 
     ## set size limits for the columns, maybe need to change in the future but should cover most taxa names
     sizes = {'You_searched_for': 100,
@@ -235,7 +235,7 @@ def main(session, fasta_path, output_path, query_length):
                         window['out'].print('%s: Saving results.' % datetime.datetime.now().strftime("%H:%M:%S"))
                         window.Refresh()
                         save_results(result, fasta_path, output_path)
-                    except (ValueError, ReadTimeout, ConnectionError): 
+                    except (ValueError, ReadTimeout, ConnectionError):
                         window['out'].print('%s: BOLD did not respond! Retrying.' % datetime.datetime.now().strftime("%H:%M:%S"))
                         continue
                     break
