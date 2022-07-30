@@ -91,6 +91,10 @@ def save_results(dataframe, fasta_path, output_path):
     ## files are saved in hdf format while runtime, will be transformed to excel as soon as requests are done
     savename = 'BOLDResults_{}.h5.lz'.format(ntpath.splitext(ntpath.basename(fasta_path))[0])
 
+    ## make empty line compatible with hdf format
+    cols = ['Rank', 'Phylum', 'Class', 'Order', 'Family', 'Genus', 'Species', 'Subspecies', 'Score', 'Similarity', 'E_Value', 'Status']
+    dataframe[cols] = dataframe[cols].fillna(value = '')
+
     ## set size limits for the columns, maybe need to change in the future but should cover most taxa names
     sizes = {'You_searched_for': 100,
              'Phylum': 80,

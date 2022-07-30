@@ -120,7 +120,8 @@ def save_results(dataframe, fasta_path, output_path):
     savename = 'BOLDResults_{}.h5.lz'.format(ntpath.splitext(ntpath.basename(fasta_path))[0])
 
     ## make all nan columns compatible with hdf format
-    dataframe['Status'] = dataframe['Status'].replace(np.nan, '')
+    cols = ['Phylum', 'Class', 'Order', 'Family', 'Genus', 'Species', 'Subspecies', 'Status', 'Process_ID']
+    dataframe[cols] = dataframe[cols].fillna(value = '')
 
     ## set size limits for the columns, maybe need to change in the future but should cover most taxa names
     sizes = {'You_searched_for': 100,
