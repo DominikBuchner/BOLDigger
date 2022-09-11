@@ -8,7 +8,7 @@ import numpy as np
 def get_threshold(df):
     threshold = df['Similarity'][0]
 
-    if threshold == 'placeholder':
+    if threshold == 'placeholder' or threshold == 'No Match':
         return 'No Match', None
     elif threshold >= 98:
         return 98, 'Species'
