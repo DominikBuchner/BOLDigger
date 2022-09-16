@@ -2,6 +2,8 @@ import openpyxl, datetime
 import pandas as pd
 import numpy as np
 import PySimpleGUI as sg
+from string import punctuation
+from string import digits
 from boldigger.jamp_hit import get_data, jamp_hit, get_threshold, move_threshold_up
 
 
@@ -11,6 +13,18 @@ def get_full_data(path):
         ## skip subspecies and process ID, rename 'You searched for to ID'
         full_data = pd.read_excel(path, usecols = 'A:G,I:T', engine = 'openpyxl')
         full_data = full_data.rename(index = str, columns={'You searched for': 'ID'})
+            
+        ## clean data from punctuation and numbers before selecting any hit
+        ## second data cleaning step
+        specials = punctuation + digits
+        levels = ['Phylum', 'Class', 'Order', 'Family', 'Genus', 'Species']
+        
+        for level in levels:
+            full_data[level] = np.where(full_data[level].str.contains('[{}]'.format(specials)), np.nan, full_data[level])
+        
+        ## if there are more than two words in the species column, only keep the first one 
+        ## first data cleaning step
+        full_data['Species'] = full_data['Species'].str.split(' ').str[0]
 
         ## check file format, check if metadata was added
         if list(full_data.columns.values)[1] != 'Phylum':

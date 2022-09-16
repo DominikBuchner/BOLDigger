@@ -6,6 +6,8 @@ from tqdm import tqdm
 from joblib import Parallel, delayed
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 from boldigger.boldblast_coi import slices
+from string import punctuation
+from string import digits
 
 ## function to make tqdm work with parallelized code
 @contextlib.contextmanager
@@ -114,6 +116,16 @@ def refresh_data(result, raw_data, data_to_check, session):
     ## restore the original dataframe with all the data
     data_to_check.loc[remaining_data.index, :] = remaining_data[:]
     raw_data.loc[data_to_check.index, :] = data_to_check[:]
+    
+    ## clean data from punctuation and numbers
+    specials = punctuation + digits
+    levels = ['Phylum', 'Class', 'Order', 'Family', 'Genus', 'Species']
+    
+    for level in levels:
+        raw_data[level] = np.where(raw_data[level].str.contains('[{}]'.format(specials)), np.nan, raw_data[level])
+    
+    ## if there are more than two words in the species column, only keep the first one 
+    raw_data['Species'] = raw_data['Species'].str.split(' ').str[0]
 
     return raw_data
 

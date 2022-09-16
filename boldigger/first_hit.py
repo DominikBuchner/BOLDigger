@@ -1,12 +1,27 @@
 import openpyxl, datetime
 import pandas as pd
+import numpy as np
 import PySimpleGUI as sg
+from string import punctuation
+from string import digits
 
 def first_hit(xlsx_path):
 
     ## load data into a dataframe
     data = pd.read_excel(xlsx_path, header = 0, engine = 'openpyxl')
     data = data.rename(columns = {'You searched for': 'ID'})
+    
+    ## clean data from punctuation and numbers before selecting any hit
+    ## second data cleaning step
+    specials = punctuation + digits
+    levels = ['Phylum', 'Class', 'Order', 'Family', 'Genus', 'Species']
+    
+    for level in levels:
+        data[level] = np.where(data[level].str.contains('[{}]'.format(specials)), '', data[level])
+        
+    ## if there are more than two words in the species column, only keep the first one 
+    ## first data cleaning step
+    data['Species'] = data['Species'].str.split(' ').str[0]
 
     ## open workbook for checking the type and create writer to save data later
     wb = openpyxl.load_workbook(xlsx_path)

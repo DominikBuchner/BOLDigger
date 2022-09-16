@@ -2,6 +2,8 @@ import openpyxl, datetime
 import pandas as pd
 import PySimpleGUI as sg
 import numpy as np
+from string import punctuation
+from string import digits
 
 ## function to return the threshold for an OTU dataframe, returns No Match for No Matches
 ## also returns a level to group by for later use
@@ -37,6 +39,18 @@ def get_data(xlsx_path):
     ## check file format
     if list(data.columns.values)[1] != 'Phylum':
         return 'Wrong file'
+    
+    ## clean data from punctuation and numbers before selecting any hit
+    ## second data cleaning step
+    specials = punctuation + digits
+    levels = ['Phylum', 'Class', 'Order', 'Family', 'Genus', 'Species']
+    
+    for level in levels:
+        data[level] = np.where(data[level].str.contains('[{}]'.format(specials)), np.nan, data[level])
+    
+    ## if there are more than two words in the species column, only keep the first one 
+    ## first data cleaning step
+    data['Species'] = data['Species'].str.split(' ').str[0]
 
     ## slice the dataframe in one df for each otu and reset the indexes on resultig dfs
     ## rename id after first value in the ID column e.g. > OTUXX
