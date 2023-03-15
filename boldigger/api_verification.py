@@ -173,14 +173,8 @@ def main(xlsx_path, fasta_path):
                 window['out'].print('{}: Saving the corrected dataset.'.format(datetime.datetime.now().strftime("%H:%M:%S")))
                 window.Refresh()
 
-                ## save output
-                wb = openpyxl.load_workbook(xlsx_path)
-                writer = pd.ExcelWriter(xlsx_path, engine = 'openpyxl')
-                writer.book = wb
-
-                corrected_data.to_excel(writer, sheet_name = 'BOLDigger hit - API corrected', index = False)
-                wb.save(xlsx_path)
-                writer.close()
+                with pd.ExcelWriter(xlsx_path, mode = "a", if_sheet_exists="replace", engine = "openpyxl") as writer:
+                    corrected_data.to_excel(writer, sheet_name = "BOLDigger hit - API corrected", index = False)
 
                 window['out'].print('{}: Done. Close to continue.'.format(datetime.datetime.now().strftime("%H:%M:%S")))
                 window.Refresh()
