@@ -49,7 +49,7 @@ def post_request(query, session):
     }
 
     ## send search request
-    r = session.post('https://boldsystems.org/index.php/IDS_IdentificationRequest', data = seq_data, timeout = 300)
+    r = session.post('https://boldsystems.org/index.php/IDS_IdentificationRequest', data = seq_data, timeout = 900)
 
     ## extract Top20 table links from the BOLD Result page
     soup = BSoup(r.text, 'html5lib')
