@@ -40,8 +40,9 @@ def move_threshold_up(thresh):
 def get_data(xlsx_path):
     ## open excel file
     ## skip subspecies and process ID, rename 'You searched for to ID'
-    data = pd.read_excel(xlsx_path, usecols="A:G,I:J", engine="openpyxl")
+    data = pd.read_excel(xlsx_path, usecols="A:G,I:J,M", engine="openpyxl")
     data = data.rename(index=str, columns={"You searched for": "ID"})
+    data = data.rename(index=str, columns={"BOLD BIN": "BIN"})
 
     ## check file format
     if list(data.columns.values)[1] != "Phylum":
@@ -58,7 +59,7 @@ def get_data(xlsx_path):
         )
 
     ## if there are more than two words in the species column, only keep the first one
-    ## first data cleaning step, add a workaroung for the No Match strings to not break
+    ## first data cleaning step, add a workaround for the No Match strings to not break
     ## backwards compability
     data["Species"] = data["Species"].replace("No Match", "NoMatch")
     data["Species"] = data["Species"].str.split(" ").str[0]
@@ -95,7 +96,7 @@ def jamp_hit(df):
         out_df = pd.DataFrame(
             {
                 "count": out_df.groupby(
-                    ["Phylum", "Class", "Order", "Family", "Genus", "Species"],
+                    ["Phylum", "Class", "Order", "Family", "Genus", "Species", "BIN"],
                     sort=False,
                 ).size()
             }
@@ -117,12 +118,13 @@ def jamp_hit(df):
         else:
             hit = out_df.head(1)
             hit = df.query(
-                "Class == '{}' and Order == '{}' and Family == '{}' and Genus == '{}' and Species == '{}'".format(
+                "Class == '{}' and Order == '{}' and Family == '{}' and Genus == '{}' and Species == '{}' and BIN == '{}'".format(
                     hit["Class"].item(),
                     hit["Order"].item(),
                     hit["Family"].item(),
                     hit["Genus"].item(),
                     hit["Species"].item(),
+                    hit["BIN"].item(),
                 )
             ).head(1)
             break
@@ -134,12 +136,16 @@ def jamp_hit(df):
     levels = ["Class", "Order", "Family", "Genus", "Species"]
 
     ## return species level information if similarity is high enough
-    ## else remove higher level information form output depending on level
+    ## else remove higher level information from output depending on level
     if threshold == 98:
         return hit
     else:
         hit = hit.assign(**{k: "" for k in levels[levels.index(level) + 1 :]})
-        return hit
+        if hit["Similarity"].item() < 98:
+            hit["BIN"] = np.nan
+            return hit
+        else:
+            return hit
 
 
 def save_results(xlsx_path, dataframe):
