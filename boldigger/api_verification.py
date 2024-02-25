@@ -132,16 +132,23 @@ def refresh_data(result, raw_data, data_to_check, session):
                 "|".join(id_pack)
             )
         )
-        r = json.loads(r.text)["bold_records"]["records"]
-        ## loop through the ids of the response, collect data, append to responses, handle responses with missing data
-        for key in id_pack:
-            ## create an temporary list to collect the data
+        try:
+            r = json.loads(r.text)["bold_records"]["records"]
+            ## loop through the ids of the response, collect data, append to responses, handle responses with missing data
+            for key in id_pack:
+                ## create an temporary list to collect the data
+                temp = []
+                for tax_level in ["phylum", "class", "order", "family"]:
+                    try:
+                        temp.append(r[key]["taxonomy"][tax_level]["taxon"]["name"])
+                    except KeyError:
+                        temp.append(np.nan)
+                responses.append(temp)
+        # handle empty json response
+        except json.decoder.JSONDecodeError:
             temp = []
-            for tax_level in ["phylum", "class", "order", "family"]:
-                try:
-                    temp.append(r[key]["taxonomy"][tax_level]["taxon"]["name"])
-                except KeyError:
-                    temp.append(np.nan)
+            for _ in range(4):
+                temp.append(np.nan)
             responses.append(temp)
 
     ## write the additional taxonomic information to a new dataframe and concat it to the one that's missing the data
