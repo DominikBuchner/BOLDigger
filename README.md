@@ -1,3 +1,6 @@
+# IMPORTANT UPDATE
+BOLDigger has been replaced with BOLDigger2 - check it out here: https://github.com/DominikBuchner/BOLDigger2
+
 # BOLDigger
 ![](boldigger/data/logo.png)
 
