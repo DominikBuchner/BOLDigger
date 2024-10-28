@@ -1,5 +1,5 @@
-# IMPORTANT UPDATE
-Due to the update of Boldsystems from v4 to v5 BOLDigger2 as well as BOLDigger is currently not working. I'm working on an update, please stay tuned. I need access as much as any other users ;).
+# Important update: BOLDigger3
+Please see: https://github.com/DominikBuchner/BOLDigger3
 
 # BOLDigger
 ![](boldigger/data/logo.png)
